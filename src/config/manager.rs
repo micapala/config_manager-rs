@@ -17,6 +17,8 @@ pub struct ConfigurationManager {
     db_file_path: String,
     configuration_groups: ConfigurationGroups,
     configuration_db_backend: ConfigurationManagerDbBackend,
+    watcher: RecommendedWatcher,
+    rx: Receiver<notify::Result<Event>>,
 }
 
 impl ConfigurationManager {
@@ -24,11 +26,16 @@ impl ConfigurationManager {
         let yaml_file_contents = std::fs::read_to_string(&config_path).expect("KONFIG");
 
         let serde_deserialized = serde_yaml::from_str::<ConfigurationGroups>(&yaml_file_contents).unwrap();
-        
+
+        let (watcher, rx) = async_watcher().await.unwrap();
+        watcher.watch(Path::new(&format!("{}.db", &config_path)), notify::RecursiveMode::NonRecursive).unwrap();
+
         ConfigurationManager {
             db_file_path: format!("{}.db", &config_path),
             configuration_groups: serde_deserialized,
             configuration_db_backend: ConfigurationManagerDbBackend::Yaml,
+            watcher,
+            rx,
         }
     }
 
@@ -49,11 +56,7 @@ impl ConfigurationManager {
     }
 
     pub async fn watch_config_changes(&mut self) -> notify::Result<()> {
-        let (mut watcher, mut rx) = async_watcher().await?;
-
-        watcher.watch(Path::new(&self.db_file_path), notify::RecursiveMode::NonRecursive);
-
-        while let Some(res) = rx.recv().await {
+        while let Some(res) = self.rx.recv().await {
             match res {
                 Ok(event) => println!("changed: {:?}", event),
                 Err(e) => println!("watch error: {:?}", e),
