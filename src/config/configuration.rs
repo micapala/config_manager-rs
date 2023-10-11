@@ -4,20 +4,36 @@ use super::group::ConfigurationGroup;
 use serde::{Serialize, Deserialize};
 
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Default, Debug, Clone, Serialize, Deserialize)]
 pub struct ConfigurationGroups {
     #[serde(flatten)]
-    groups: HashMap<String, ConfigurationGroup>
+    pub groups: HashMap<String, ConfigurationGroup>
 }
-
-
 
 impl ConfigurationGroups {
     pub fn add_group(&mut self, name: String, group: ConfigurationGroup) {
         self.groups.insert(name, group);
     }
+    pub fn get_group(&self, name: &str) -> Option<&ConfigurationGroup> {
+        self.groups.get(name)
+    }
+    pub fn remove_group(&mut self, name: &str) -> Option<ConfigurationGroup> {
+        self.groups.remove(name)
+    }
 }
 
+impl Into<crate::proto::ConfigurationGroups> for ConfigurationGroups {
+    fn into(self) -> crate::proto::ConfigurationGroups {
+        let mut proto_groups: HashMap<String, crate::proto::ConfigurationGroup> = HashMap::new();
+        for (k, v) in self.groups.iter() {
+            let proto_group: crate::proto::ConfigurationGroup = v.clone().into();
+            proto_groups.insert(k.clone(), proto_group);
+        }
+        crate::proto::ConfigurationGroups {
+            groups: proto_groups,
+        }
+    }
+}
 
 #[cfg(test)]
 mod tests {

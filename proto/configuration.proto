@@ -1,0 +1,74 @@
+syntax = "proto3";
+
+package configuration;
+
+// Message representing a single ConfigurationGroup.
+message ConfigurationGroup {
+    map<string, string> entries = 1;
+}
+
+// Message representing a collection of ConfigurationGroups.
+message ConfigurationGroups {
+    map<string, ConfigurationGroup> groups = 1;
+}
+
+// Service definition for performing CRUD operations.
+service ConfigurationManager {
+    
+    // Create a new ConfigurationGroup.
+    rpc CreateGroup(CreateGroupRequest) returns (CreateGroupResponse);
+    
+    // Read (retrieve) a ConfigurationGroup by name.
+    rpc ReadGroup(ReadGroupRequest) returns (ReadGroupResponse);
+    
+    // Update a ConfigurationGroup.
+    rpc UpdateGroup(UpdateGroupRequest) returns (UpdateGroupResponse);
+    
+    // Delete a ConfigurationGroup by name.
+    rpc DeleteGroup(DeleteGroupRequest) returns (DeleteGroupResponse);
+    
+    // Get all ConfigurationGroups.
+    rpc GetAllGroups(GetAllGroupsRequest) returns (GetAllGroupsResponse);
+}
+
+// Request and response messages for each RPC.
+
+message CreateGroupRequest {
+    string group_name = 1;
+}
+
+message CreateGroupResponse {
+    string group_name = 1;
+}
+
+message ReadGroupRequest {
+    string group_name = 1;
+}
+
+message ReadGroupResponse {
+    ConfigurationGroup group = 1;
+}
+
+message UpdateGroupRequest {
+    string group_name = 1;
+    ConfigurationGroup group = 2;
+}
+
+message UpdateGroupResponse {
+    ConfigurationGroup group = 1;
+}
+
+message DeleteGroupRequest {
+    string group_name = 1;
+}
+
+message DeleteGroupResponse {
+    string group_name = 1;
+}
+
+message GetAllGroupsRequest {
+}
+
+message GetAllGroupsResponse {
+    ConfigurationGroups groups = 1;
+}

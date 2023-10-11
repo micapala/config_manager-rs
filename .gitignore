@@ -1,0 +1,6 @@
+/target
+*.yaml
+*.yaml.db
+.vscode
+.aider*
+*db
